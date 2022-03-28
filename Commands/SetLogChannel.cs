@@ -30,7 +30,7 @@ public class SetLogChannel: Command
         };
     }
 
-    public new async Task Handle(DiscordClient sender, InteractionCreateEventArgs eventArgs)
+    public override async Task Handle(DiscordClient sender, InteractionCreateEventArgs eventArgs)
     {
         if (eventArgs.Interaction.Data.Name == Name)
         {

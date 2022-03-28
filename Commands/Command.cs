@@ -26,7 +26,7 @@ public abstract class Command
         _url = $"https://discord.com/api/v9/applications/{settings.ApplicationId}";
     }
 
-    public async Task Handle(DiscordClient sender, InteractionCreateEventArgs eventArgs)
+    public virtual async Task Handle(DiscordClient sender, InteractionCreateEventArgs eventArgs)
     {
         throw new MissingMethodException("Method not implemented");
     }

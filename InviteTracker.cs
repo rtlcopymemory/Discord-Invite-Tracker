@@ -18,7 +18,7 @@ namespace InviteTracker
             {
                 Token = settings.Token,
                 TokenType = TokenType.Bot,
-                Intents = DiscordIntents.AllUnprivileged
+                Intents = DiscordIntents.AllUnprivileged | DiscordIntents.GuildMembers
             });
 
             var commands = new List<Command>()
@@ -46,7 +46,7 @@ namespace InviteTracker
             {
                 HandleInviteCreate(settings, sender, eventArgs);
             };
-
+            
             discord.GuildMemberAdded += async (sender, eventArgs) =>
             {
                 await HandleMemberJoin(settings, sender, eventArgs);
@@ -150,7 +150,11 @@ namespace InviteTracker
                 break;
             }
             
-            var embed = new DiscordEmbedBuilder();
+            var embed = new DiscordEmbedBuilder
+            {
+                Color = new DiscordColor("#2f3136")
+            };
+            
             if (usedInvite is null)
             {
                 embed.Title = "New Join from vanity/unknown invite";
@@ -167,7 +171,7 @@ namespace InviteTracker
             embed.AddField("Joiner", eventArgs.Member.Id.ToString(), true);
             embed.AddField("Joiner Mention", $"<@eventArgs.Member.Id.ToString()>", true);
             
-            var message = new DiscordMessageBuilder().WithEmbed(new DiscordEmbedBuilder());
+            var message = new DiscordMessageBuilder().WithEmbed(embed);
             await channel.SendMessageAsync(message);
 
             if (toUpdate) await SyncInvites(sender, serverId, settings);
