@@ -12,12 +12,14 @@ public abstract class Command
     private readonly ApiCommand _command;
     private readonly AuthenticationHeaderValue? _authHeader;
     private readonly string? _url;
+    protected readonly string DbPath;
 
     public string? Name => _command.name;
 
     protected Command(BotSettings settings, ApiCommand command)
     {
         _command = command;
+        DbPath = settings.DbPath;
         _authHeader = new AuthenticationHeaderValue("Bot", settings.Token);
         _url = $"https://discord.com/api/v9/applications/{settings.ApplicationId}";
     }

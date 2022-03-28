@@ -55,7 +55,7 @@ public class SetLogChannel: Command
                 return;
             }
 
-            using (var db = new LiteDatabase(@".\database.db"))
+            using (var db = new LiteDatabase(DbPath))
             {
                 // Get or create Server "table"
                 var collection = db.GetCollection<Server>("servers");
