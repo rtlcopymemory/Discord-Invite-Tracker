@@ -19,12 +19,13 @@ namespace InviteTracker
                 Intents = DiscordIntents.AllUnprivileged
             });
 
-            var testCommand = new SetLogChannel(settings);
-            await testCommand.RegisterToServer("764229893042733097");
+            var setLogChannel = new SetLogChannel(settings);
+            await setLogChannel.Register();
+            await setLogChannel.RegisterToServer("764229893042733097");
 
             discord.InteractionCreated += async (sender, eventArgs) =>
             {
-                await testCommand.Handle(sender, eventArgs);
+                await setLogChannel.Handle(sender, eventArgs);
             };
 
             await discord.ConnectAsync();
