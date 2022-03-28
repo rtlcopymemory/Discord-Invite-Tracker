@@ -108,6 +108,8 @@ namespace InviteTracker
             var serverCol = db.GetCollection<Server>("servers");
             var channel = await sender.GetChannelAsync(ulong.Parse(serverCol.FindOne(x => x.ServerId == serverId).ChannelId));
 
+            if (channel is null) return;
+
             Invite? usedInvite = null;
             var toUpdate = false;
             foreach (var invite in invites)
@@ -169,7 +171,7 @@ namespace InviteTracker
             embed.AddField("Inviter ID", usedInvite.InviterId, true);
             embed.AddField("Inviter Mention", $"<@{usedInvite.InviterId}>", true);
             embed.AddField("Joiner", eventArgs.Member.Id.ToString(), true);
-            embed.AddField("Joiner Mention", $"<@eventArgs.Member.Id.ToString()>", true);
+            embed.AddField("Joiner Mention", $"<@{eventArgs.Member.Id.ToString()}>", true);
             
             var message = new DiscordMessageBuilder().WithEmbed(embed);
             await channel.SendMessageAsync(message);
