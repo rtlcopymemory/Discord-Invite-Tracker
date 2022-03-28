@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -31,7 +29,7 @@ namespace InviteTracker
             {
                 await command.Register();
                 // test server
-                await command.RegisterToServer("764229893042733097");
+                // await command.RegisterToServer("764229893042733097");
             }
 
             discord.InteractionCreated += async (sender, eventArgs) =>

@@ -34,6 +34,9 @@ public class SetLogChannel: Command
     {
         if (eventArgs.Interaction.Data.Name == Name)
         {
+            var member = await eventArgs.Interaction.Guild.GetMemberAsync(eventArgs.Interaction.User.Id);
+            if (!member.Permissions.HasPermission(Permissions.BanMembers) && !member.Permissions.HasPermission(Permissions.Administrator)) return;
+
             string? channelId = null;
                     
             await eventArgs.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());

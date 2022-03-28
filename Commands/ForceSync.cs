@@ -1,4 +1,5 @@
 using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 
 namespace InviteTracker.Commands;
@@ -21,7 +22,13 @@ public class ForceSync: Command
     {
         if (eventArgs.Interaction.Data.Name == Name)
         {
+            var member = await eventArgs.Interaction.Guild.GetMemberAsync(eventArgs.Interaction.User.Id);
+            if (!member.Permissions.HasPermission(Permissions.BanMembers) && !member.Permissions.HasPermission(Permissions.Administrator)) return;
+
             await InviteTracker.SyncInvites(sender, eventArgs.Interaction.Guild.Id.ToString(), Settings);
+
+            var message = new DiscordMessageBuilder().WithContent("Synced");
+            await eventArgs.Interaction.Channel.SendMessageAsync(message);
         }
     }
 }
