@@ -8,4 +8,5 @@ public class Invite
     public DateTimeOffset? ExprireDate { get; set; }
     public int Uses { get; set; }
     public int MaxUses { get; set; }
+    public string ServerId { get; set; }
 }

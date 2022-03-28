@@ -35,6 +35,11 @@ namespace InviteTracker
                 HandleInviteCreate(settings, sender, eventArgs);
             };
 
+            discord.GuildMemberAdded += async (sender, eventArgs) =>
+            {
+                await HandleMemberJoin(settings, sender, eventArgs);
+            };
+
             await discord.ConnectAsync();
             await Task.Delay(-1);
         }
@@ -57,7 +62,8 @@ namespace InviteTracker
                 Uses = evInvite.Uses,
                 ExprireDate = evInvite.ExpiresAt,
                 InviterId = evInvite.Inviter.Id.ToString(),
-                MaxUses = evInvite.MaxUses
+                MaxUses = evInvite.MaxUses,
+                ServerId = eventArgs.Guild.Id.ToString()
             };
                 
             var exists = col.FindOne(x => x.InviteCode == evInvite.Code);
@@ -69,12 +75,87 @@ namespace InviteTracker
                 exists.InviteCode = invite.InviteCode;
                 exists.InviterId = invite.InviterId;
                 exists.MaxUses = invite.MaxUses;
+                exists.ServerId = invite.ServerId;
                     
                 col.Update(exists);
                 return;
             }
                 
             col.Insert(invite);
+        }
+
+        private static async Task HandleMemberJoin(BotSettings settings, DiscordClient sender,
+            GuildMemberAddEventArgs eventArgs)
+        {
+            var now = DateTimeOffset.Now;
+            var invites = await eventArgs.Guild.GetInvitesAsync();
+            var serverId = eventArgs.Guild.Id.ToString();
+            using var db = new LiteDatabase(settings.DbPath);
+
+            var col = db.GetCollection<Invite>("invites");
+            var serverCol = db.GetCollection<Server>("servers");
+            var channel = await sender.GetChannelAsync(ulong.Parse(serverCol.FindOne(x => x.ServerId == serverId).ChannelId));
+
+            Invite? usedInvite = null;
+            foreach (var invite in invites)
+            {
+                var saved = col.Query()
+                    .Where(x => x.ServerId == serverId && x.InviteCode == invite.Code).ToList();
+
+                
+                if (saved.Count < 1)
+                {
+                    // This is a new invite || vanity url
+                    // Maybe created while the bot was down
+                    // TODO: Make sync function
+                }
+
+                var foundInDb = saved.First();
+
+                if (foundInDb.ExprireDate < now)
+                {
+                    // It is expired, remove
+                    col.Delete(foundInDb.Id);
+                    continue;
+                }
+
+                if (foundInDb.Uses >= invite.Uses) continue;
+                
+                // The uses increased, it's likely this.
+                usedInvite = new Invite()
+                {
+                    Id = foundInDb.Id,
+                    Uses = invite.Uses,
+                    ExprireDate = invite.ExpiresAt,
+                    InviteCode = invite.Code,
+                    InviterId = invite.Inviter.Id.ToString(),
+                    MaxUses = invite.MaxUses,
+                    ServerId = serverId
+                };
+                    
+                col.Update(usedInvite);
+                break;
+            }
+            
+            var embed = new DiscordEmbedBuilder();
+            if (usedInvite is null)
+            {
+                embed.Title = "New Join from vanity/unknown invite";
+                embed.Description = "Couldn't find the invite in the saved DB";
+                
+                await channel.SendMessageAsync(new DiscordMessageBuilder().WithEmbed(embed));
+                return;
+            }
+
+            embed.Title = "New Join from invite";
+            embed.Description = "Remember that this bot cannot determine with 100% accuracy if the invite is correct";
+            embed.AddField("Inviter ID", usedInvite.InviterId, true);
+            embed.AddField("Inviter Mention", $"<@{usedInvite.InviterId}>", true);
+            embed.AddField("Joiner", eventArgs.Member.Id.ToString(), true);
+            embed.AddField("Joiner Mention", $"<@eventArgs.Member.Id.ToString()>", true);
+            
+            var message = new DiscordMessageBuilder().WithEmbed(new DiscordEmbedBuilder());
+            await channel.SendMessageAsync(message);
         }
     }
 }
