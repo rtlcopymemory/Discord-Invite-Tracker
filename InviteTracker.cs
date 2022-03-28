@@ -21,13 +21,25 @@ namespace InviteTracker
                 Intents = DiscordIntents.AllUnprivileged
             });
 
-            var setLogChannel = new SetLogChannel(settings);
-            await setLogChannel.Register();
-            await setLogChannel.RegisterToServer("764229893042733097");
+            var commands = new List<Command>()
+            {
+                new SetLogChannel(settings),
+                new ForceSync(settings)
+            };
+
+            foreach (var command in commands)
+            {
+                await command.Register();
+                // test server
+                await command.RegisterToServer("764229893042733097");
+            }
 
             discord.InteractionCreated += async (sender, eventArgs) =>
             {
-                await setLogChannel.Handle(sender, eventArgs);
+                foreach (var command in commands)
+                {
+                    await command.Handle(sender, eventArgs);
+                }
             };
 
             discord.InviteCreated += async (sender, eventArgs) =>
@@ -161,7 +173,7 @@ namespace InviteTracker
             if (toUpdate) await SyncInvites(sender, serverId, settings);
         }
 
-        private static async Task SyncInvites(DiscordClient client, string serverId, BotSettings settings)
+        public static async Task SyncInvites(DiscordClient client, string serverId, BotSettings settings)
         {
             using var db = new LiteDatabase(settings.DbPath);
             var guild = await client.GetGuildAsync(ulong.Parse(serverId));
