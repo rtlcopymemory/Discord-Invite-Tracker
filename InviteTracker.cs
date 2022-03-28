@@ -3,7 +3,9 @@
 using Newtonsoft.Json;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 using InviteTracker.Commands;
+using LiteDB;
 
 namespace InviteTracker
 {
@@ -28,6 +30,11 @@ namespace InviteTracker
                 await setLogChannel.Handle(sender, eventArgs);
             };
 
+            discord.InviteCreated += async (sender, eventArgs) =>
+            {
+                HandleInviteCreate(settings, sender, eventArgs);
+            };
+
             await discord.ConnectAsync();
             await Task.Delay(-1);
         }
@@ -37,12 +44,37 @@ namespace InviteTracker
             var jsonContent = File.ReadAllText("appsettings.json");
             return JsonConvert.DeserializeObject<BotSettings>(jsonContent) ?? throw new InvalidOperationException();
         }
-    }
-    
-    public class BotSettings
-    {
-        public string Token;
-        public string ApplicationId;
-        public string DbPath;
+
+        private static void HandleInviteCreate(BotSettings settings, DiscordClient sender, InviteCreateEventArgs eventArgs)
+        {
+            using var db = new LiteDatabase(settings.DbPath);
+            var col = db.GetCollection<Invite>("invites");
+            var evInvite = eventArgs.Invite;
+                
+            var invite = new Invite()
+            {
+                InviteCode = evInvite.Code,
+                Uses = evInvite.Uses,
+                ExprireDate = evInvite.ExpiresAt,
+                InviterId = evInvite.Inviter.Id.ToString(),
+                MaxUses = evInvite.MaxUses
+            };
+                
+            var exists = col.FindOne(x => x.InviteCode == evInvite.Code);
+            if (exists != null)
+            {
+                // If it exists. (uh???)
+                exists.Uses = invite.Uses;
+                exists.ExprireDate = invite.ExprireDate;
+                exists.InviteCode = invite.InviteCode;
+                exists.InviterId = invite.InviterId;
+                exists.MaxUses = invite.MaxUses;
+                    
+                col.Update(exists);
+                return;
+            }
+                
+            col.Insert(invite);
+        }
     }
 }
