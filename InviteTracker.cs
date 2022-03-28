@@ -110,6 +110,8 @@ namespace InviteTracker
 
             Invite? usedInvite = null;
             var toUpdate = false;
+            // TODO: Also check if db had any invite that isn't there anymore
+            // that didn't expire, if yes, it could have reached the max users
             foreach (var invite in invites)
             {
                 var saved = col.Query()
