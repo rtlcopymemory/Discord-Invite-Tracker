@@ -97,6 +97,7 @@ namespace InviteTracker
             var channel = await sender.GetChannelAsync(ulong.Parse(serverCol.FindOne(x => x.ServerId == serverId).ChannelId));
 
             Invite? usedInvite = null;
+            var toUpdate = false;
             foreach (var invite in invites)
             {
                 var saved = col.Query()
@@ -107,7 +108,7 @@ namespace InviteTracker
                 {
                     // This is a new invite || vanity url
                     // Maybe created while the bot was down
-                    // TODO: Make sync function
+                    toUpdate = true;
                 }
 
                 var foundInDb = saved.First();
@@ -156,6 +157,45 @@ namespace InviteTracker
             
             var message = new DiscordMessageBuilder().WithEmbed(new DiscordEmbedBuilder());
             await channel.SendMessageAsync(message);
+
+            if (toUpdate) await SyncInvites(sender, serverId, settings);
+        }
+
+        private static async Task SyncInvites(DiscordClient client, string serverId, BotSettings settings)
+        {
+            using var db = new LiteDatabase(settings.DbPath);
+            var guild = await client.GetGuildAsync(ulong.Parse(serverId));
+            var invites = await guild.GetInvitesAsync();
+
+            foreach (var invite in invites)
+            {
+                var col = db.GetCollection<Invite>("invites");
+
+                var exists = col.FindOne(x => x.InviteCode == invite.Code);
+                if (exists != null)
+                {
+                    exists.Uses = invite.Uses;
+                    exists.ExprireDate = invite.ExpiresAt;
+                    exists.InviteCode = invite.Code;
+                    exists.InviterId = invite.Inviter.Id.ToString();
+                    exists.MaxUses = invite.MaxUses;
+                    exists.ServerId = serverId;
+                    
+                    col.Update(exists);
+                    continue;
+                }
+
+                var newInvite = new Invite()
+                {
+                    Uses = invite.Uses,
+                    ExprireDate = invite.ExpiresAt,
+                    InviteCode = invite.Code,
+                    InviterId = invite.Inviter.Id.ToString(),
+                    MaxUses = invite.MaxUses,
+                    ServerId = serverId
+                };
+                col.Insert(newInvite);
+            }
         }
     }
 }
