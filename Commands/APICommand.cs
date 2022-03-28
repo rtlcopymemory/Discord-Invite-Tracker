@@ -16,6 +16,7 @@ public class ApiCommandOption
     public OptionType type;
     public bool required;
     public List<ApiOptionChoice>? choices;
+    public ChannelType? channelType;
 }
 
 public class ApiOptionChoice

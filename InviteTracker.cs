@@ -2,6 +2,7 @@
 
 using Newtonsoft.Json;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using InviteTracker.Commands;
 
 namespace InviteTracker
@@ -20,6 +21,11 @@ namespace InviteTracker
 
             var testCommand = new SetLogChannel(settings);
             await testCommand.RegisterToServer("764229893042733097");
+
+            discord.InteractionCreated += async (sender, eventArgs) =>
+            {
+                await testCommand.Handle(sender, eventArgs);
+            };
 
             await discord.ConnectAsync();
             await Task.Delay(-1);

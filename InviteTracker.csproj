@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01102" />
+      <PackageReference Include="LiteDB" Version="5.0.11" />
     </ItemGroup>
 
     <ItemGroup>

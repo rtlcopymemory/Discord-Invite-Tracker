@@ -7,10 +7,12 @@ namespace InviteTracker.Commands;
 
 public abstract class Command
 {
-    private readonly ApiCommand? _command;
+    private readonly ApiCommand _command;
     private readonly AuthenticationHeaderValue? _authHeader;
     private readonly string? _url;
-    
+
+    public string? Name => _command.name;
+
     protected Command(BotSettings settings, ApiCommand command)
     {
         _command = command;
