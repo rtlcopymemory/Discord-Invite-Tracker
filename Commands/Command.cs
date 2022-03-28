@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using DSharpPlus;
+using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
 
 namespace InviteTracker.Commands;
@@ -18,6 +20,11 @@ public abstract class Command
         _command = command;
         _authHeader = new AuthenticationHeaderValue("Bot", settings.Token);
         _url = $"https://discord.com/api/v9/applications/{settings.ApplicationId}";
+    }
+
+    public async Task Handle(DiscordClient sender, InteractionCreateEventArgs eventArgs)
+    {
+        throw new MissingMethodException("Method not implemented");
     }
     
     public async Task Register()

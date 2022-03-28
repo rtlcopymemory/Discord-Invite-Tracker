@@ -30,7 +30,7 @@ public class SetLogChannel: Command
         };
     }
 
-    public async Task Handle(DiscordClient sender, InteractionCreateEventArgs eventArgs)
+    public new async Task Handle(DiscordClient sender, InteractionCreateEventArgs eventArgs)
     {
         if (eventArgs.Interaction.Data.Name == Name)
         {
@@ -78,7 +78,7 @@ public class SetLogChannel: Command
                 collection.Update(exists);
             }
 
-            reply = new DiscordFollowupMessageBuilder().WithContent("Channel set! :D");
+            reply = new DiscordFollowupMessageBuilder().WithContent($"Channel <#{channelId}> set! :D");
             reply.IsEphemeral = true;
             await eventArgs.Interaction.CreateFollowupMessageAsync(reply);
         }
