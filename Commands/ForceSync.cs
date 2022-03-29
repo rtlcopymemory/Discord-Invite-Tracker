@@ -27,8 +27,8 @@ public class ForceSync: Command
 
             await InviteTracker.SyncInvites(sender, eventArgs.Interaction.Guild.Id.ToString(), Settings);
 
-            var message = new DiscordMessageBuilder().WithContent("Synced");
-            await eventArgs.Interaction.Channel.SendMessageAsync(message);
+            var message = new DiscordInteractionResponseBuilder().WithContent("Synced");
+            await eventArgs.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, message);
         }
     }
 }
