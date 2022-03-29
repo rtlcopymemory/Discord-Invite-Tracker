@@ -35,7 +35,12 @@ public class SetLogChannel: Command
         if (eventArgs.Interaction.Data.Name == Name)
         {
             var member = await eventArgs.Interaction.Guild.GetMemberAsync(eventArgs.Interaction.User.Id);
-            if (!member.Permissions.HasPermission(Permissions.BanMembers) && !member.Permissions.HasPermission(Permissions.Administrator)) return;
+            if (!member.Permissions.HasPermission(Permissions.BanMembers) && !member.Permissions.HasPermission(Permissions.Administrator))
+            {
+                var messageFail = new DiscordInteractionResponseBuilder().WithContent("You don't have enough permissions");
+                await eventArgs.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, messageFail);
+                return;
+            }
 
             string? channelId = null;
                     
