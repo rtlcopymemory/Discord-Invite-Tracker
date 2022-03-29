@@ -73,6 +73,9 @@ public class SetLogChannel: Command
                         ChannelId = channelId
                     };
                     collection.Insert(server);
+                    reply = new DiscordFollowupMessageBuilder().WithContent($"Channel <#{channelId}> set! :D");
+                    reply.IsEphemeral = true;
+                    await eventArgs.Interaction.CreateFollowupMessageAsync(reply);
                     return;
                 }
                 
